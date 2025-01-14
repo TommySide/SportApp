@@ -17,7 +17,7 @@ public class RegisterDto
     public string Email { get; set; }
     
     [Required]
-    [StringLength(100, MinimumLength = 5, ErrorMessage = "Password must be between 3 and 50 characters")]
+    [StringLength(100, MinimumLength = 5, ErrorMessage = "Password must be between 5 and 50 characters")]
     public string Password { get; set; }
     
     [Required]

@@ -10,12 +10,12 @@ using WebApplication1.Repositories;
 
 namespace WebApplication1.Services;
 
-public class AuthService
+public class UserService
 {
     private readonly UserRepository _repository;
     private readonly IConfiguration _configuration;
 
-    public AuthService(UserRepository repository, IConfiguration configuration)
+    public UserService(UserRepository repository, IConfiguration configuration)
     {
         _repository = repository;
         _configuration = configuration;
@@ -27,9 +27,13 @@ public class AuthService
         {
             return false;
         }
+
+        registerDto.FirstName = registerDto.FirstName[0].ToString().ToUpper() + registerDto.FirstName.Substring(1);
+        registerDto.LastName = registerDto.LastName[0].ToString().ToUpper() + registerDto.LastName.Substring(1);
         
         var user = new User
         {
+            Password = String.Empty,
             FirstName = registerDto.FirstName,
             LastName = registerDto.LastName,
             Email = registerDto.Email,
@@ -60,6 +64,8 @@ public class AuthService
             throw new UnauthorizedAccessException("Wrong password");
         }
         
+        user.Password = "";
+        
         return new LoginResponseDto
         {
             Token = GenerateJwtToken(user),
@@ -74,11 +80,12 @@ public class AuthService
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.FirstName + "" + user.LastName),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("userId", user.Id.ToString()),
-            new Claim("email", user.Email),
-            new Claim("role", user.Role.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Name, user.FirstName),
+            new Claim(ClaimTypes.Sid, user.Id.ToString()),
+            new Claim(ClaimTypes.Role, user.Role.ToString()),
         };
-
+        
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException()));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -91,5 +98,11 @@ public class AuthService
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public async Task<List<User>> GetAllUsers()
+    {
+        var users = await _repository.GetUsersAsync();
+        return users;
     }
 }

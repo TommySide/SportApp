@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Text.Json.Serialization;
 
 namespace SharedLibrary.Entities;
 
@@ -10,9 +10,10 @@ public class User
     public string Email { get; set; }
     public string Password { get; set; }
     public Role Role { get; set; }
-
-    public ICollection<Reservation> Reservations { get; set; }
+    [JsonIgnore]
     public ICollection<Activity> Activites { get; set; }
+    [JsonIgnore]
+    public ICollection<Reservation> Reservations { get; set; }
 }
 
 public enum Role
